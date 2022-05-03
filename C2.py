@@ -70,7 +70,7 @@ for epoch in range(EPOCHS):
     correct = 0
     total = 0
 
-    if (epoch%20 == 0):
+    if (epoch%50 == 0):
         with torch.no_grad():
             for data in val_loader:
                 images, labels = data
