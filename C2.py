@@ -43,6 +43,7 @@ criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(net.parameters(), lr=0.1, momentum=0.9, weight_decay=0.0001)
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor = 0.1, patience=5)
 
+valacc = 0
 EPOCHS = 200
 t1 = time.time()
 for epoch in range(EPOCHS):
@@ -72,7 +73,7 @@ for epoch in range(EPOCHS):
     correct = 0
     total = 0
 
-    if (epoch%50 == 0):
+    if (epoch%20 == 0):
         with torch.no_grad():
             for data in val_loader:
                 images, labels = data
@@ -85,6 +86,10 @@ for epoch in range(EPOCHS):
         print('Accuracy on the validation set: ', 100*(correct/total), '%')
         if (100*(correct/total) >= 92):
             t2=time.time()
+            valacc = 100*(correct/total)
             break
+    
+    if(valacc >= 92):
+        break
 
 print('Training and Validation Done - The time taken to reach 92% validation accuracy is', t2-t1, 'seconds')
