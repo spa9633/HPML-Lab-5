@@ -6,8 +6,6 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import random_split
 
-from ResNet import Bottleneck, ResNet, ResNet50
-
 
 transform_train = transforms.Compose([
     transforms.RandomHorizontalFlip(),
@@ -38,6 +36,7 @@ classes = ['plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship'
 
 
 net = torch.hub.load('pytorch/vision:v0.10.0', 'resnet50', pretrained=False)
+net.to('cuda')
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(net.parameters(), lr=0.1, momentum=0.9, weight_decay=0.0001)
