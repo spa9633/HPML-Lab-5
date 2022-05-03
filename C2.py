@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import random_split
+import time
 
 
 transform_train = transforms.Compose([
@@ -43,6 +44,7 @@ optimizer = optim.SGD(net.parameters(), lr=0.1, momentum=0.9, weight_decay=0.000
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor = 0.1, patience=5)
 
 EPOCHS = 200
+t1 = time.time()
 for epoch in range(EPOCHS):
     losses = []
     running_loss = 0
@@ -82,13 +84,7 @@ for epoch in range(EPOCHS):
                 correct += (predicted == labels).sum().item()
         print('Accuracy on the validation set: ', 100*(correct/total), '%')
         if (100*(correct/total) >= 92):
+            t2=time.time()
             break
 
-print('Training and Validation Done')
-
-
-
-
-
-
-
+print('Training and Validation Done - The time taken to reach 92% validation accuracy is', t2-t1, 'seconds')
