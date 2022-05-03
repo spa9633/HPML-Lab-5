@@ -84,12 +84,12 @@ for epoch in range(EPOCHS):
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
         print('Accuracy on the validation set: ', 100*(correct/total), '%')
-        if (100*(correct/total) >= 92):
+        if (100*(correct/total) >= 84):
             t2=time.time()
             valacc = 100*(correct/total)
             break
     
-    if(valacc >= 92):
+    if(valacc >= 84):
         break
 
-print('Training and Validation Done - The time taken to reach 92% validation accuracy is', t2-t1, 'seconds')
+print('Training and Validation Done - The time taken to reach 84% validation accuracy is', t2-t1, 'seconds')
