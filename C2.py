@@ -24,7 +24,7 @@ transform_test = transforms.Compose([
 train = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_train)
 
 torch.manual_seed(43)
-val_size = 5000
+val_size = 15000
 train_size = len(train) - val_size
 
 train_ds, val_ds = random_split(train, [train_size, val_size])
@@ -44,7 +44,7 @@ optimizer = optim.SGD(net.parameters(), lr=0.1, momentum=0.9, weight_decay=0.000
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor = 0.1, patience=5)
 
 valacc = 0
-EPOCHS = 200
+EPOCHS = 2000
 t1 = time.time()
 for epoch in range(EPOCHS):
     losses = []
