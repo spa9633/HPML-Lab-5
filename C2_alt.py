@@ -250,7 +250,7 @@ trainset = torchvision.datasets.CIFAR10(
 
 torch.manual_seed(43)
 val_size = 15000
-train_size = len(train) - val_size
+train_size = len(trainset) - val_size
 
 train_ds, val_ds = random_split(trainset, [train_size, val_size])
 
