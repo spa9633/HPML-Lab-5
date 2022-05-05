@@ -313,6 +313,7 @@ def train(epoch):
 
 targetacc = 85
 def validate(epoch):
+    print('Validation Step\n')
     global best_acc
     net.eval()
     test_loss = 0
@@ -348,7 +349,7 @@ def validate(epoch):
         
         if acc >= targetacc:
             t2 = time.time()
-            print ('The time taken to reach target accuracy of 85 is %3f', (t2-t1))
+            print ('The time taken to reach target accuracy of 85 is %.3f', (t2-t1))
             sys.exit(0)
          
 
