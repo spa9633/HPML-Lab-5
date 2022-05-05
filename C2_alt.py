@@ -307,8 +307,7 @@ def train(epoch):
         total += targets.size(0)
         correct += predicted.eq(targets).sum().item()
 
-        progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-                     % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
+        print('Epoch and Batch ID:', epoch, batch_idx, 'Loss: %.3f | Acc: %.3f%% (%d/%d)', (train_loss/(batch_idx+1)), 100.*correct/total, correct, total)
 
 
 targetacc = 85
@@ -330,8 +329,7 @@ def validate(epoch):
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
 
-            progress_bar(batch_idx, len(valloader), 'Val Loss: %.3f | Val Acc: %.3f%% (%d/%d)'
-                         % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
+            print('Epoch and Batch ID:'epoch, batch_idx, 'Val Loss: %.3f | Val Acc: %.3f%% (%d/%d)', (test_loss/(batch_idx+1)), 100.*correct/total, correct, total)
 
     # Save checkpoint.
     acc = 100.*correct/total
