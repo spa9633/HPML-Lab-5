@@ -191,7 +191,8 @@ for epoch in range(EPOCHS):
     
     correct = 0
     total = 0
-
+    
+    #Validation step
     if (epoch%10 == 0):
         with torch.no_grad():
             for data in val_loader:

@@ -294,7 +294,7 @@ def validate(epoch):
         }
         if not os.path.isdir('checkpoint'):
             os.mkdir('checkpoint')
-        torch.save(state, './checkpoint/ckpt_v100_run3.pth')
+        torch.save(state, './checkpoint/ckpt_rtx8000_run3.pth')
         best_acc = acc
         
         if acc >= targetacc:
