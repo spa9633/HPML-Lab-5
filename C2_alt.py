@@ -299,7 +299,7 @@ def validate(epoch):
         
         if acc >= targetacc:
             t2 = time.time()
-            print ('The time taken to reach target accuracy of 85 is %.3f' % (t2-t1))
+            print ('The time taken to reach target accuracy of 85 is %.3f' % ((t2-t1)/60)
             sys.exit(0)
          
 
