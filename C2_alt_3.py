@@ -8,7 +8,26 @@ from torch.utils.data import random_split
 
 import torchvision
 import torchvision.transforms as transforms
+
+import os
+import argparse
+import sys
 import time
+import math
+
+def get_mean_and_std(dataset):
+    '''Compute the mean and std value of dataset.'''
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=True, num_workers=2)
+    mean = torch.zeros(3)
+    std = torch.zeros(3)
+    print('==> Computing mean and std..')
+    for inputs, targets in dataloader:
+        for i in range(3):
+            mean[i] += inputs[:,i,:,:].mean()
+            std[i] += inputs[:,i,:,:].std()
+    mean.div_(len(dataset))
+    std.div_(len(dataset))
+    return mean, std
 
 def init_params(net):
     '''Init layer parameters.'''
@@ -24,6 +43,39 @@ def init_params(net):
             init.normal(m.weight, std=1e-3)
             if m.bias:
                 init.constant(m.bias, 0)
+
+
+def format_time(seconds):
+    days = int(seconds / 3600/24)
+    seconds = seconds - days*3600*24
+    hours = int(seconds / 3600)
+    seconds = seconds - hours*3600
+    minutes = int(seconds / 60)
+    seconds = seconds - minutes*60
+    secondsf = int(seconds)
+    seconds = seconds - secondsf
+    millis = int(seconds*1000)
+
+    f = ''
+    i = 1
+    if days > 0:
+        f += str(days) + 'D'
+        i += 1
+    if hours > 0 and i <= 2:
+        f += str(hours) + 'h'
+        i += 1
+    if minutes > 0 and i <= 2:
+        f += str(minutes) + 'm'
+        i += 1
+    if secondsf > 0 and i <= 2:
+        f += str(secondsf) + 's'
+        i += 1
+    if millis > 0 and i <= 2:
+        f += str(millis) + 'ms'
+        i += 1
+    if f == '':
+        f = '0ms'
+    return f
 
 class BasicBlock(nn.Module):
     expansion = 1
@@ -120,7 +172,15 @@ class ResNet(nn.Module):
 def ResNet50():
     return ResNet(Bottleneck, [3, 4, 6, 3])
 
+parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
+parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
+parser.add_argument('--resume', '-r', action='store_true',
+                    help='resume from checkpoint')
+args = parser.parse_args()
+
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
+best_acc = 0  # best test accuracy
+start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 
 # Data
 print('==> Preparing data..')
@@ -137,78 +197,116 @@ transform_test = transforms.Compose([
 ])
 
 
-train = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_train)
+trainset = torchvision.datasets.CIFAR10(
+    root='./data', train=True, download=True, transform=transform_train)
 
 torch.manual_seed(43)
 val_size = 15000
-train_size = len(train) - val_size
+train_size = len(trainset) - val_size
 
-train_ds, val_ds = random_split(train, [train_size, val_size])
+train_ds, val_ds = random_split(trainset, [train_size, val_size])
 
-trainloader = torch.utils.data.DataLoader(train_ds, batch_size=128, shuffle=True, num_workers=2)
+trainloader = torch.utils.data.DataLoader(
+    train_ds, batch_size=128, shuffle=True, num_workers=2)
 
-val_loader = torch.utils.data.DataLoader(val_ds, batch_size=256, shuffle=False, num_workers=2)
+valloader = torch.utils.data.DataLoader(
+    val_ds, batch_size=128, shuffle=False, num_workers=2)
 
-classes = ['plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+classes = ('plane', 'car', 'bird', 'cat', 'deer',
+           'dog', 'frog', 'horse', 'ship', 'truck')
 
-
+# Model
+print('==> Building model..')
 net = ResNet50()
-net.to('cuda')
+net = net.to(device)
 if device == 'cuda':
     net = torch.nn.DataParallel(net)
     cudnn.benchmark = True
 
+if args.resume:
+    # Load checkpoint.
+    print('==> Resuming from checkpoint..')
+    assert os.path.isdir('checkpoint'), 'Error: no checkpoint directory found!'
+    checkpoint = torch.load('./checkpoint/ckpt.pth')
+    net.load_state_dict(checkpoint['net'])
+    best_acc = checkpoint['acc']
+    start_epoch = checkpoint['epoch']
+
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.SGD(net.parameters(), lr=0.1, momentum=0.9, weight_decay=0.0001)
-scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
+optimizer = optim.SGD(net.parameters(), lr=args.lr,
+                      momentum=0.9, weight_decay=5e-4)
+scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
 
-valacc = 0
-EPOCHS = 2000
-t1 = time.time()
-for epoch in range(EPOCHS):
-    losses = []
-    running_loss = 0
-    for i, inp in enumerate(trainloader):
-        inputs, labels = inp
-        inputs, labels = inputs.to('cuda'), labels.to('cuda')
-        optimizer.zero_grad()
-    
-        outputs = net(inputs)
-        loss = criterion(outputs, labels)
-        losses.append(loss.item())
 
-        loss.backward()
-        optimizer.step()
-        
-        running_loss += loss.item()
-        
-        if i%100 == 0 and i > 0:
-            print(f'Loss [{epoch+1}, {i}](epoch, minibatch): ', running_loss / 100)
-            running_loss = 0.0
-
-    avg_loss = sum(losses)/len(losses)
-    scheduler.step()
-    
+# Training
+def train(epoch):
+    print('\nEpoch: %d' % epoch)
+    net.train()
+    train_loss = 0
     correct = 0
     total = 0
+    for batch_idx, (inputs, targets) in enumerate(trainloader):
+        inputs, targets = inputs.to(device), targets.to(device)
+        optimizer.zero_grad()
+        outputs = net(inputs)
+        loss = criterion(outputs, targets)
+        loss.backward()
+        optimizer.step()
 
-    if (epoch%10 == 0):
-        with torch.no_grad():
-            for data in val_loader:
-                images, labels = data
-                images, labels = images.to('cuda'), labels.to('cuda')
-                outputs = net(images)
+        train_loss += loss.item()
+        _, predicted = outputs.max(1)
+        total += targets.size(0)
+        correct += predicted.eq(targets).sum().item()
         
-                _, predicted = torch.max(outputs.data, 1)
-                total += labels.size(0)
-                correct += (predicted == labels).sum().item()
-        print('Accuracy on the validation set: ', 100*(correct/total), '%')
-        if (100*(correct/total) >= 84):
-            t2=time.time()
-            valacc = 100*(correct/total)
-            break
-    
-    if(valacc >= 84):
-        break
+        if batch_idx % 100 ==0 and batch_idx > 1:
+            print('Epoch and Batch ID:', epoch, batch_idx, 'Loss: %.3f | Acc: %.3f%% (%d/%d)' % (train_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
-print('Training and Validation Done - The time taken to reach 84% validation accuracy is', "{:.3f}".format(t2-t1), 'seconds')
+
+targetacc = 85
+def validate(epoch):
+    print('Validation Step\n')
+    global best_acc
+    net.eval()
+    test_loss = 0
+    correct = 0
+    total = 0
+    with torch.no_grad():
+        for batch_idx, (inputs, targets) in enumerate(valloader):
+            inputs, targets = inputs.to(device), targets.to(device)
+            outputs = net(inputs)
+            loss = criterion(outputs, targets)
+
+            test_loss += loss.item()
+            _, predicted = outputs.max(1)
+            total += targets.size(0)
+            correct += predicted.eq(targets).sum().item()
+
+            print(' Validation - Epoch and Batch ID:', epoch, batch_idx, 'Val Loss: %.3f | Val Acc: %.3f%% (%d/%d)' % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
+
+    # Save checkpoint.
+    acc = 100.*correct/total
+    if acc > best_acc:
+        print('Saving..')
+        state = {
+            'net': net.state_dict(),
+            'acc': acc,
+            'epoch': epoch,
+        }
+        if not os.path.isdir('checkpoint'):
+            os.mkdir('checkpoint')
+        torch.save(state, './checkpoint/ckpt_v100_run3.pth')
+        best_acc = acc
+        
+        if acc >= targetacc:
+            t2 = time.time()
+            print ('The time taken to reach target accuracy of 85 is %.3f' % ((t2-t1)/60))
+            sys.exit(0)
+         
+
+
+t1 = time.time()
+for epoch in range(start_epoch, start_epoch+200):
+    train(epoch)
+    if epoch%10 == 0:
+        validate(epoch)
+    scheduler.step()
