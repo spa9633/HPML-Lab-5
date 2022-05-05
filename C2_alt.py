@@ -210,7 +210,7 @@ trainloader = torch.utils.data.DataLoader(
     train_ds, batch_size=128, shuffle=True, num_workers=2)
 
 valloader = torch.utils.data.DataLoader(
-    val_ds, batch_size=256, shuffle=False, num_workers=2)
+    val_ds, batch_size=128, shuffle=False, num_workers=2)
 
 classes = ('plane', 'car', 'bird', 'cat', 'deer',
            'dog', 'frog', 'horse', 'ship', 'truck')
