@@ -257,8 +257,9 @@ def train(epoch):
         _, predicted = outputs.max(1)
         total += targets.size(0)
         correct += predicted.eq(targets).sum().item()
-
-        print('Epoch and Batch ID:', epoch, batch_idx, 'Loss: %.3f | Acc: %.3f%% (%d/%d)' % (train_loss/(batch_idx+1)), 100.*correct/total, correct, total)
+        
+        if batch_idx % 100 ==0 and batch_idx > 1:
+            print('Epoch and Batch ID:', epoch, batch_idx, 'Loss: %.3f | Acc: %.3f%% (%d/%d)' % (train_loss/(batch_idx+1)), 100.*correct/total, correct, total)
 
 
 targetacc = 85
@@ -280,7 +281,8 @@ def validate(epoch):
             total += targets.size(0)
             correct += predicted.eq(targets).sum().item()
 
-            print('Epoch and Batch ID:', epoch, batch_idx, 'Val Loss: %.3f | Val Acc: %.3f%% (%d/%d)' % (test_loss/(batch_idx+1)), 100.*correct/total, correct, total)
+            if batch_idx % 100 ==0 and batch_idx > 1:
+                print(' Validation - Epoch and Batch ID:', epoch, batch_idx, 'Val Loss: %.3f | Val Acc: %.3f%% (%d/%d)' % (test_loss/(batch_idx+1)), 100.*correct/total, correct, total)
 
     # Save checkpoint.
     acc = 100.*correct/total
