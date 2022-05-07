@@ -3,12 +3,12 @@
 #include <iomanip>
 // Kernel function to add the elements of two arrays
 __global__
-void add(long n, float* x, float* y)
-{   int index = blockIdx.x * blockDim.x + threadIdx.x;
-    int stride = blockDim.x * gridDim.x;
-    for (int i = index; i < n; index+=stride)
-        y[i] = x[i] + y[i];
+void add(long n, float *x, float *y)
+{
+  for (int i = 0; i < n; i++)
+    y[i] = x[i] + y[i];
 }
+
 
 int main(int argc, char** argv)
 {
@@ -30,7 +30,8 @@ int main(int argc, char** argv)
   float *d_x, *d_y;
   cudaMalloc((void**)&d_x, size);
   cudaMalloc((void**)&d_y, size);
-
+  
+  //Copy arrays to device
   cudaMemcpy(d_x, h_x, size, cudaMemcpyHostToDevice);
   cudaMemcpy(d_y, h_y, size, cudaMemcpyHostToDevice);
 
