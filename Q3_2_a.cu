@@ -35,14 +35,14 @@ int main(int argc, char** argv)
   cudaMemcpy(d_x, h_x, size, cudaMemcpyHostToDevice);
   cudaMemcpy(d_y, h_y, size, cudaMemcpyHostToDevice);
 
-  // Run kernel on 1M elements on the GPU
+  // Run kernel on KM elements on the GPU
   add<<<1, 1>>>(K, d_x, d_y);
+
+ //Copy results to host side array
+  cudaMemcpy(h_y, d_y, size, cudaMemcpyDeviceToHost);
 
   // Wait for GPU to finish before accessing on host
   cudaDeviceSynchronize();
-  
-  //Copy results to host side array
-  cudaMemcpy(h_y, d_y, size, cudaMemcpyDeviceToHost);
 
   // Check for errors (all values should be 3.0f)
   float maxError = 0.0f;
