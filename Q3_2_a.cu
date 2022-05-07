@@ -35,7 +35,7 @@ int main(int argc, char** argv)
   cudaMemcpy(d_y, h_y, size, cudaMemcpyHostToDevice);
 
   // Run kernel on 1M elements on the GPU
-  add<<<1, 1>>>(K, x, y);
+  add<<<1, 1>>>(K, d_x, d_y);
 
   // Wait for GPU to finish before accessing on host
   cudaDeviceSynchronize();
