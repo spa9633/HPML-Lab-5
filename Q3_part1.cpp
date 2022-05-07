@@ -2,7 +2,7 @@
 #include <math.h>
 
 // function to add the elements of two arrays
-void add(int n, float *x, float *y)
+void add(long n, float *x, float *y)
 {
   for (int i = 0; i < n; i++)
       y[i] = x[i] + y[i];
@@ -10,7 +10,7 @@ void add(int n, float *x, float *y)
 
 int main(int argc, char** argv)
 {
-  int N = atoi(argv[1]) * 1000000; // 1M elements
+  long N = atoi(argv[1]) * 1000000; // K*M elements
 
   float *x = new float[N];
   float *y = new float[N];
