@@ -16,10 +16,9 @@ int main(int argc, char** argv)
   size_t size = K * sizeof(float);
 
   //Initialize host side arrays and allocate memory
-  float *h_x, *h_y;
 
-  h_x = (float*)malloc(K * sizeof(float));
-  h_y = (float*)malloc(K * sizeof(float));
+  float h_x = (float*)malloc(K * sizeof(float));
+  float h_y = (float*)malloc(K * sizeof(float));
 
   for (int i = 0; i < K; i++) {
     h_x[i] = 1.0f;
