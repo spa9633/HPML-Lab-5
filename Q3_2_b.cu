@@ -3,9 +3,12 @@
 #include <iomanip>
 // Kernel function to add the elements of two arrays
 __global__
+__global__
 void add(int n, float *x, float *y)
 {
-  for (int i = 0; i < n; i++)
+  int index = blockIdx.x * blockDim.x + threadIdx.x;
+  int stride = blockDim.x * gridDim.x;
+  for (int i = index; i < n; i += stride)
     y[i] = x[i] + y[i];
 }
 
