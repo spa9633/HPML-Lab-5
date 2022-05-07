@@ -3,7 +3,7 @@
 #include <iomanip>
 // Kernel function to add the elements of two arrays
 __global__
-void add(long n, float *x, float *y)
+void add(int n, float *x, float *y)
 {
   for (int i = 0; i < n; i++)
     y[i] = x[i] + y[i];
@@ -12,7 +12,7 @@ void add(long n, float *x, float *y)
 
 int main(int argc, char** argv)
 {
-  long K = atoi(argv[1]) * 1000000;
+  int K = atoi(argv[1]) * 1000000;
   size_t size = K * sizeof(float);
 
   //Initialize host side arrays and allocate memory
@@ -52,8 +52,8 @@ int main(int argc, char** argv)
   // Free memory
   cudaFree(d_x);
   cudaFree(d_y);
-  delete [] h_x;
-  delete [] h_y;
+  free(h_x);
+  free(h_y);
   
   return 0;
 }

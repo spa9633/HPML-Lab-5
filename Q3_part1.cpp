@@ -31,8 +31,8 @@ int main(int argc, char** argv)
   std::cout << "Max error: " << maxError << std::endl;
 
   // Free memory
-  delete [] x;
-  delete [] y;
+  free(x);
+  free(y);
 
   return 0;
 }
