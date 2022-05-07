@@ -39,7 +39,7 @@ int main(int argc, char** argv)
   // Run kernel on KM elements on the GPU
   int blockSize = 256;
   int numBlocks = (K + blockSize - 1) / blockSize;
-  add<<<numBlocks, blockSize>>>(K, x, y);
+  add<<<numBlocks, blockSize>>>(K, d_x, d_y);
 
  //Copy results to host side array
   cudaMemcpy(h_y, d_y, size, cudaMemcpyDeviceToHost);
