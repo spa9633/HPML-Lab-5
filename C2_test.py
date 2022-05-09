@@ -229,7 +229,7 @@ transform_test = transforms.Compose([
     transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
 ])
 
-test_image_folder = "/data/images"
+test_image_folder = "./data/images"
 
 testset = torchvision.datasets.ImageFolder(test_image_folder, transform=transform_test)
 
