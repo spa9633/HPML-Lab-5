@@ -253,7 +253,7 @@ checkpoint = torch.load('./checkpoint/ckpt_rtx8000_run1.pth')
 net.load_state_dict(checkpoint['net'])
 
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.SGD(net.parameters(), lr=args.lr,
+optimizer = optim.SGD(net.parameters(), lr=0.1,
                       momentum=0.9, weight_decay=5e-4)
 scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
 
